@@ -312,3 +312,44 @@ func TestUpdateGroup_Failure(t *testing.T) {
 	assert.Nil(t, updatedGroup)
 	assert.Equal(t, "validation failed for operation: value cannot be empty for replace operation", err.Error())
 }
+
+func TestDeleteGroup_Success(t *testing.T) {
+	client := &retool.Client{
+		BaseURL: "https://example.com",
+		HTTPClient: &http.Client{
+			Transport: &MockTransport{
+				Response: &http.Response{
+					StatusCode: 204,
+					Body:       nil,
+				},
+			},
+		},
+	}
+
+	err := client.DeleteGroup("1234")
+	assert.NoError(t, err)
+}
+
+func TestDeleteGroup_Failure(t *testing.T) {
+	response := `
+{
+	"success": false,
+	"message": "No group '123' found for organization"
+}`
+
+	client := &retool.Client{
+		BaseURL: "https://example.com",
+		HTTPClient: &http.Client{
+			Transport: &MockTransport{
+				Response: &http.Response{
+					StatusCode: 404,
+					Body:       io.NopCloser(bytes.NewBuffer([]byte(response))),
+				},
+			},
+		},
+	}
+
+	err := client.DeleteGroup("123")
+	assert.Error(t, err)
+	assert.Equal(t, "No group '123' found for organization", err.Error())
+}

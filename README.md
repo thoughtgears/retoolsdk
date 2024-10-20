@@ -24,6 +24,7 @@ Standardized API client for the Retool API.
 - **List Groups**: List all groups in the organization.
 - **Create Group**: Create a new group with optional parameters.
 - **Update Group**: Update a group's information by ID.
+- **Delete Group**: Delete a group by ID.
 
 ## Usage
 

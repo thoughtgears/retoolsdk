@@ -137,3 +137,10 @@ func (c *Client) UpdateGroup(id string, operations []UpdateOperations) (*Group, 
 	baseURL := fmt.Sprintf("%s/groups/%s", c.BaseURL, id)
 	return doSingleRequest[Group](c, "PATCH", baseURL, requestBodyJSON)
 }
+
+// DeleteGroup deletes a group with the given groupId. The API token must have the "Groups > Write" scope.
+func (c *Client) DeleteGroup(id string) error {
+	baseURL := fmt.Sprintf("%s/groups/%s", c.BaseURL, id)
+	_, err := doSingleRequest[any](c, "DELETE", baseURL, nil)
+	return err
+}
