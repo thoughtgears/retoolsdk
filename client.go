@@ -1,6 +1,7 @@
 package retoolsdk
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -20,38 +21,17 @@ type Client struct {
 	HTTPClient *http.Client
 }
 
-type DataType[T any] struct {
-	Single *T
-	List   []T
-}
-
-func (s *DataType[T]) UnmarshalJSON(data []byte) error {
-	var single T
-	if err := json.Unmarshal(data, &single); err == nil {
-		s.Single = &single
-		return nil
-	}
-
-	var list []T
-	if err := json.Unmarshal(data, &list); err == nil {
-		s.List = list
-		return nil
-	}
-
-	return fmt.Errorf("invalid data format")
-}
-
 // Response is the struct for the response from the Retool API
 // By default, responses include up to 100 items.
 // When there are more items, the has_more field in the response is set to true
 // and the next field has a pagination token.
 type Response[T any] struct {
-	Success    bool        `json:"success"`
-	Message    string      `json:"message,omitempty"`
-	Data       DataType[T] `json:"data,omitempty"`
-	TotalCount int         `json:"total_count,omitempty"`
-	NextToken  string      `json:"next_token,omitempty"`
-	HasMore    bool        `json:"has_more,omitempty"`
+	Success    bool   `json:"success"`
+	Message    string `json:"message,omitempty"`
+	Data       T      `json:"data,omitempty"`
+	TotalCount int    `json:"total_count,omitempty"`
+	NextToken  string `json:"next_token,omitempty"`
+	HasMore    bool   `json:"has_more,omitempty"`
 }
 
 // transportWithAPIKey is custom transport that adds the API key to
@@ -101,6 +81,31 @@ func NewClient(apiKey, endpoint string, opts ...ClientOption) (*Client, error) {
 	return c, nil
 }
 
+// Do makes an HTTP request to the Retool API
+func (c *Client) Do(method, url string, body interface{}) (*http.Response, error) {
+	var requestBody []byte
+	var err error
+
+	if body != nil {
+		requestBody, err = json.Marshal(body)
+		if err != nil {
+			return nil, fmt.Errorf("marshalling request: %w", err)
+		}
+	}
+
+	req, err := http.NewRequest(method, url, bytes.NewBuffer(requestBody))
+	if err != nil {
+		return nil, fmt.Errorf("creating request: %w", err)
+	}
+
+	resp, err := c.HTTPClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("making request: %w", err)
+	}
+
+	return resp, nil
+}
+
 // RoundTrip adds the API key to the Authorization header for every request
 // and sets the Content-Type header to application/json.
 func (t *transportWithAPIKey) RoundTrip(req *http.Request) (*http.Response, error) {
@@ -114,6 +119,7 @@ func (t *transportWithAPIKey) RoundTrip(req *http.Request) (*http.Response, erro
 }
 
 // WithTimeout allows setting a custom timeout in seconds for the HTTP client.
+// Have to pass in the time.Duration value with time.Type (e.g. 10*time.Second).
 func WithTimeout(timeout time.Duration) ClientOption {
 	return func(c *Client) error {
 		if timeout > 0 {

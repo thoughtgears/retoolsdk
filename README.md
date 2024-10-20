@@ -1,5 +1,20 @@
 # Retool API Client
 
+## Implemented features
+
+#### User
+
+- **Get User by ID**: Get a user information by ID.
+- **List Users**: List all users in the organization.
+- **Create User**: Create a new user with optional parameters.
+- **Update User**: Update a user's information by ID.
+- **Delete User**: Delete a user by ID.
+
+#### User Attributes
+
+- **Update User Attributes**: Update a user's attributes by ID.
+- **Delete User Attributes**: Delete a user's attributes by ID.
+- **List Organization Attributes**: List all organization attributes.
 
 ## API Documentation
 The Retool API is documented using the OpenAPI 3.0 format and available at 

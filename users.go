@@ -1,11 +1,9 @@
 package retoolsdk
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net/http"
 	"net/url"
 )
 
@@ -25,28 +23,18 @@ type User struct {
 
 // GetUser returns the user. The API token must have the "Users > Read" scope.
 func (c *Client) GetUser(id string) (*User, error) {
-	req, _ := http.NewRequest("GET", fmt.Sprintf("%s/users/%s", c.BaseURL, id), nil)
-
-	var response Response[User]
-
-	resp, err := c.HTTPClient.Do(req)
+	baseURL := fmt.Sprintf("%s/users/%s", c.BaseURL, id)
+	resp, err := c.Do("GET", baseURL, nil)
 	if err != nil {
 		return nil, fmt.Errorf("making request: %w", err)
 	}
 
-	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
-		return nil, fmt.Errorf("decoding response: %w", err)
+	data, err := decodeResponse[User](resp)
+	if err != nil {
+		return nil, err
 	}
 
-	if response.Success {
-		return response.Data.Single, nil
-	}
-
-	if !response.Success && response.Message == "User sid is misformatted: userId" {
-		return nil, errors.New(response.Message)
-	}
-
-	return nil, nil
+	return &data.Data, nil
 }
 
 // ListUserOpts is a struct that contains optional query parameters for ListUsers.
@@ -78,40 +66,7 @@ func (c *Client) ListUsers(opts *ListUserOpts) ([]User, error) {
 		}
 	}
 
-	var allUsers []User
-	var nextToken string
-	hasMore := true
-
-	for hasMore {
-		if nextToken != "" {
-			query.Set("next", nextToken)
-		}
-
-		urlWithQuery := fmt.Sprintf("%s?%s", baseURL, query.Encode())
-
-		req, err := http.NewRequest("GET", urlWithQuery, nil)
-		if err != nil {
-			return nil, fmt.Errorf("creating request: %w", err)
-		}
-
-		var response Response[User]
-
-		resp, err := c.HTTPClient.Do(req)
-		if err != nil {
-			return nil, fmt.Errorf("making request: %w", err)
-		}
-
-		if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
-			return nil, fmt.Errorf("decoding response: %w", err)
-		}
-
-		allUsers = append(allUsers, response.Data.List...)
-
-		nextToken = response.NextToken
-		hasMore = response.HasMore
-	}
-
-	return allUsers, nil
+	return doPaginatedRequest[User](c, baseURL, query)
 }
 
 // CreateUserOpts is a struct that contains optional parameters for CreateUser.
@@ -155,30 +110,18 @@ func (c *Client) CreateUser(email, firstName, lastName string, opts *CreateUserO
 		return nil, fmt.Errorf("marshalling newUser: %w", err)
 	}
 
-	req, _ := http.NewRequest("POST", fmt.Sprintf("%s/users", c.BaseURL), bytes.NewBuffer(newUserJSON))
-	resp, err := c.HTTPClient.Do(req)
+	baseURL := fmt.Sprintf("%s/users", c.BaseURL)
+	resp, err := c.Do("POST", baseURL, newUserJSON)
 	if err != nil {
 		return nil, fmt.Errorf("making request: %w", err)
 	}
 
-	var response Response[User]
-	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
-		return nil, fmt.Errorf("decoding response: %w", err)
+	data, err := decodeResponse[User](resp)
+	if err != nil {
+		return nil, err
 	}
 
-	if !response.Success && response.Message == fmt.Sprintf("User with email %s already exists", email) {
-		return nil, errors.New(response.Message)
-	}
-
-	if !response.Success && response.Message == "Invalid email type for body parameter: email" {
-		return nil, errors.New(response.Message)
-	}
-
-	if !response.Success && response.Message == "Internal server error" {
-		return nil, errors.New(response.Message)
-	}
-
-	return response.Data.Single, nil
+	return &data.Data, nil
 }
 
 // UpdateUserOperations is a struct that contains the operations to update a user.
@@ -219,14 +162,32 @@ func (c *Client) UpdateUser(id string, operations []UpdateUserOperations) (*User
 		return nil, fmt.Errorf("marshalling request: %w", err)
 	}
 
-	req, _ := http.NewRequest("PATCH", fmt.Sprintf("%s/users/%s", c.BaseURL, id), bytes.NewBuffer(requestBodyJSON))
-
-	resp, err := c.HTTPClient.Do(req)
+	baseURL := fmt.Sprintf("%s/users/%s", c.BaseURL, id)
+	resp, err := c.Do("PATCH", baseURL, requestBodyJSON)
 	if err != nil {
 		return nil, fmt.Errorf("making request: %w", err)
 	}
 
-	fmt.Println(resp)
+	data, err := decodeResponse[User](resp)
+	if err != nil {
+		return nil, err
+	}
 
-	return nil, nil
+	return &data.Data, nil
+}
+
+// DeleteUser disables a user from the organization. The API token must have the "Users > Write" scope.
+func (c *Client) DeleteUser(id string) error {
+	baseURL := fmt.Sprintf("%s/users/%s", c.BaseURL, id)
+	resp, err := c.Do("DELETE", baseURL, nil)
+	if err != nil {
+		return fmt.Errorf("making request: %w", err)
+	}
+
+	_, err = decodeResponse[User](resp)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

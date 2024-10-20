@@ -71,7 +71,7 @@ func TestGetUser_EmptyData(t *testing.T) {
 	}
 
 	user, err := client.GetUser("user_123")
-	assert.NoError(t, err)
+	assert.Error(t, err)
 	assert.Nil(t, user)
 }
 
@@ -348,4 +348,119 @@ func TestCreateUser_InternalServerError(t *testing.T) {
 	assert.Error(t, err)
 	assert.Nil(t, user)
 	assert.Equal(t, "Internal server error", err.Error())
+}
+
+func TestUpdateUser_Success(t *testing.T) {
+	response := `
+{
+	"success": true,
+	"data": {
+		"id": "123",
+		"email": "john.doe@example.com",
+		"first_name": "NewFirstName",
+		"last_name": "Doe"
+	}
+}`
+
+	client := &retool.Client{
+		BaseURL: "https://example.com",
+		HTTPClient: &http.Client{
+			Transport: &MockTransport{
+				Response: &http.Response{
+					StatusCode: 200,
+					Body:       io.NopCloser(bytes.NewBuffer([]byte(response))),
+				},
+			},
+		},
+	}
+
+	operations := []retool.UpdateUserOperations{
+		{
+			Op:    "replace",
+			Path:  "first_name",
+			Value: "NewFirstName",
+		},
+	}
+
+	updatedUser, err := client.UpdateUser("123", operations)
+	assert.NoError(t, err)
+	assert.NotNil(t, updatedUser)
+	assert.Equal(t, "123", updatedUser.ID)
+	assert.Equal(t, "john.doe@example.com", updatedUser.Email)
+	assert.Equal(t, "NewFirstName", updatedUser.FirstName)
+	assert.Equal(t, "Doe", updatedUser.LastName)
+}
+
+func TestUpdateUser_Failure(t *testing.T) {
+	response := `
+{
+ "success": false,
+ "message": "Patched document failed schema validation: String must contain at least 1 character(s): first_name"
+}`
+
+	client := &retool.Client{
+		BaseURL: "https://example.com",
+		HTTPClient: &http.Client{
+			Transport: &MockTransport{
+				Response: &http.Response{
+					StatusCode: 200,
+					Body:       io.NopCloser(bytes.NewBuffer([]byte(response))),
+				},
+			},
+		},
+	}
+
+	operations := []retool.UpdateUserOperations{
+		{
+			Op:    "replace",
+			Path:  "first_name",
+			Value: "",
+		},
+	}
+
+	updatedUser, err := client.UpdateUser("123", operations)
+	assert.Error(t, err)
+	assert.Nil(t, updatedUser)
+	assert.Equal(t, "Patched document failed schema validation: String must contain at least 1 character(s): first_name", err.Error())
+}
+
+func TestDeleteUser_Success(t *testing.T) {
+	client := &retool.Client{
+		BaseURL: "https://example.com",
+		HTTPClient: &http.Client{
+			Transport: &MockTransport{
+				Response: &http.Response{
+					StatusCode: 204,
+					Body:       nil,
+				},
+			},
+		},
+	}
+
+	err := client.DeleteUser("user_123")
+	assert.NoError(t, err)
+}
+
+func TestDeleteUser_Failure(t *testing.T) {
+	response := `
+{
+	"success": false,
+	"message": "No user 'user_123' found for organization"
+}`
+
+	client := &retool.Client{
+		BaseURL: "https://example.com",
+		HTTPClient: &http.Client{
+			Transport: &MockTransport{
+				Response: &http.Response{
+					StatusCode: 404,
+					Body:       io.NopCloser(bytes.NewBuffer([]byte(response))),
+				},
+			},
+		},
+	}
+
+	err := client.DeleteUser("user_123")
+	assert.Error(t, err)
+	assert.Equal(t, "No user 'user_123' found for organization", err.Error())
 }

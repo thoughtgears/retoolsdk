@@ -42,7 +42,7 @@ func TestNewClient_MissingEndpoint(t *testing.T) {
 }
 
 func TestNewClient_CustomTimeout(t *testing.T) {
-	client, err := retool.NewClient("test-api-key", "example.com", retool.WithTimeout(30))
+	client, err := retool.NewClient("test-api-key", "example.com", retool.WithTimeout(30*time.Second))
 	assert.NoError(t, err)
 	assert.NotNil(t, client)
 	assert.Equal(t, 30*time.Second, client.HTTPClient.Timeout)
