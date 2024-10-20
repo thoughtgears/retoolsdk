@@ -24,17 +24,7 @@ type User struct {
 // GetUser returns the user. The API token must have the "Users > Read" scope.
 func (c *Client) GetUser(id string) (*User, error) {
 	baseURL := fmt.Sprintf("%s/users/%s", c.BaseURL, id)
-	resp, err := c.Do("GET", baseURL, nil)
-	if err != nil {
-		return nil, fmt.Errorf("making request: %w", err)
-	}
-
-	data, err := decodeResponse[User](resp)
-	if err != nil {
-		return nil, err
-	}
-
-	return &data.Data, nil
+	return doSingleRequest[User](c, "GET", baseURL, nil)
 }
 
 // ListUserOpts is a struct that contains optional query parameters for ListUsers.
@@ -111,17 +101,7 @@ func (c *Client) CreateUser(email, firstName, lastName string, opts *CreateUserO
 	}
 
 	baseURL := fmt.Sprintf("%s/users", c.BaseURL)
-	resp, err := c.Do("POST", baseURL, newUserJSON)
-	if err != nil {
-		return nil, fmt.Errorf("making request: %w", err)
-	}
-
-	data, err := decodeResponse[User](resp)
-	if err != nil {
-		return nil, err
-	}
-
-	return &data.Data, nil
+	return doSingleRequest[User](c, "POST", baseURL, newUserJSON)
 }
 
 // UpdateUserOperations is a struct that contains the operations to update a user.
@@ -163,31 +143,12 @@ func (c *Client) UpdateUser(id string, operations []UpdateUserOperations) (*User
 	}
 
 	baseURL := fmt.Sprintf("%s/users/%s", c.BaseURL, id)
-	resp, err := c.Do("PATCH", baseURL, requestBodyJSON)
-	if err != nil {
-		return nil, fmt.Errorf("making request: %w", err)
-	}
-
-	data, err := decodeResponse[User](resp)
-	if err != nil {
-		return nil, err
-	}
-
-	return &data.Data, nil
+	return doSingleRequest[User](c, "PATCH", baseURL, requestBodyJSON)
 }
 
 // DeleteUser disables a user from the organization. The API token must have the "Users > Write" scope.
 func (c *Client) DeleteUser(id string) error {
 	baseURL := fmt.Sprintf("%s/users/%s", c.BaseURL, id)
-	resp, err := c.Do("DELETE", baseURL, nil)
-	if err != nil {
-		return fmt.Errorf("making request: %w", err)
-	}
-
-	_, err = decodeResponse[User](resp)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	_, err := doSingleRequest[any](c, "DELETE", baseURL, nil)
+	return err
 }

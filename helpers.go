@@ -12,11 +12,6 @@ import (
 func decodeResponse[T any](resp *http.Response) (*Response[T], error) {
 	var response Response[T]
 
-	// Check if the response is empty
-	if resp.StatusCode == http.StatusNoContent {
-		return nil, nil
-	}
-
 	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
 		return nil, fmt.Errorf("decoding response: %w", err)
 	}
@@ -26,6 +21,26 @@ func decodeResponse[T any](resp *http.Response) (*Response[T], error) {
 	}
 
 	return &response, nil
+}
+
+// doSingleRequest is a helper function for making single resource requests.
+func doSingleRequest[T any](client *Client, method, url string, body interface{}) (*T, error) {
+	resp, err := client.Do(method, url, body)
+	if err != nil {
+		return nil, fmt.Errorf("making request: %w", err)
+	}
+
+	// Check if the response is empty
+	if resp.StatusCode == http.StatusNoContent {
+		return nil, nil
+	}
+
+	responseData, err := decodeResponse[T](resp)
+	if err != nil {
+		return nil, err
+	}
+
+	return &responseData.Data, nil
 }
 
 // doPaginatedRequest is a helper function to make paginated requests to the API.

@@ -52,17 +52,7 @@ type Invite struct {
 // GetGroup get a group with a given groupId. The API token must have the "Groups > Read" scope.
 func (c *Client) GetGroup(id string) (*Group, error) {
 	baseURL := fmt.Sprintf("%s/groups/%s", c.BaseURL, id)
-	resp, err := c.Do("GET", baseURL, nil)
-	if err != nil {
-		return nil, fmt.Errorf("making request: %w", err)
-	}
-
-	data, err := decodeResponse[Group](resp)
-	if err != nil {
-		return nil, err
-	}
-
-	return &data.Data, nil
+	return doSingleRequest[Group](c, "GET", baseURL, nil)
 }
 
 // ListGroups get all permission groups for an organization or space. The API token must have the "Groups > Read" scope.
