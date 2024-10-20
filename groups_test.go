@@ -237,3 +237,78 @@ func TestCreateGroup_Failure(t *testing.T) {
 	assert.Error(t, err)
 	assert.Nil(t, group)
 }
+
+func TestUpdateGroup_Success(t *testing.T) {
+	response := `
+{
+	"success": true,
+	"data": {
+		"id": 123,
+		"name": "Updated Group",
+		"members": [{
+			"id": "user_123",
+			"email": "jane.doe@example.com",
+			"is_group_admin": false
+		}]
+	}
+}`
+
+	client := &retool.Client{
+		BaseURL: "https://example.com",
+		HTTPClient: &http.Client{
+			Transport: &MockTransport{
+				Response: &http.Response{
+					StatusCode: 200,
+					Body:       io.NopCloser(bytes.NewBuffer([]byte(response))),
+				},
+			},
+		},
+	}
+
+	operations := []retool.UpdateOperations{
+		{
+			Op:    "replace",
+			Path:  "name",
+			Value: "Updated Group",
+		},
+	}
+
+	updatedGroup, err := client.UpdateGroup("123", operations)
+	assert.NoError(t, err)
+	assert.NotNil(t, updatedGroup)
+	assert.Equal(t, "Updated Group", updatedGroup.Name)
+	assert.Equal(t, "jane.doe@example.com", updatedGroup.Members[0].Email)
+}
+
+func TestUpdateGroup_Failure(t *testing.T) {
+	response := `
+{
+	"success": false,
+	"message": "validation failed for operation: value cannot be empty for replace operation"
+}`
+
+	client := &retool.Client{
+		BaseURL: "https://example.com",
+		HTTPClient: &http.Client{
+			Transport: &MockTransport{
+				Response: &http.Response{
+					StatusCode: 400,
+					Body:       io.NopCloser(bytes.NewBuffer([]byte(response))),
+				},
+			},
+		},
+	}
+
+	operations := []retool.UpdateOperations{
+		{
+			Op:    "replace",
+			Path:  "name",
+			Value: "",
+		},
+	}
+
+	updatedGroup, err := client.UpdateGroup("123", operations)
+	assert.Error(t, err)
+	assert.Nil(t, updatedGroup)
+	assert.Equal(t, "validation failed for operation: value cannot be empty for replace operation", err.Error())
+}

@@ -116,34 +116,20 @@ func (c *Client) CreateUser(email, firstName, lastName string, opts *CreateUserO
 	return doSingleRequest[User](c, "POST", baseURL, newUser)
 }
 
-// UpdateUserOperations is a struct that contains the operations to update a user.
-type UpdateUserOperations struct {
-	Op    string `json:"op"`
-	Path  string `json:"path"`
-	Value string `json:"value"`
-}
-
-// User operations allowed.
-const (
-	UserOpAdd     = "add"
-	UserOpRemove  = "remove"
-	UserOpReplace = "replace"
-)
-
 // UpdateUser updates and returns the updated user. The API token must have the "Users > Write" scope.
-func (c *Client) UpdateUser(id string, operations []UpdateUserOperations) (*User, error) {
-	if len(operations) != 0 {
-		for _, op := range operations {
-			if op.Op != UserOpAdd && op.Op != UserOpRemove && op.Op != UserOpReplace {
-				return nil, errors.New("invalid operation: must be 'add', 'remove', or 'replace'")
-			}
-		}
-	} else {
+func (c *Client) UpdateUser(id string, operations []UpdateOperations) (*User, error) {
+	if len(operations) == 0 {
 		return nil, errors.New("no operations provided")
 	}
 
+	for _, op := range operations {
+		if err := op.Validate(); err != nil {
+			return nil, fmt.Errorf("validation failed for operation: %w", err)
+		}
+	}
+
 	type body struct {
-		Operations []UpdateUserOperations `json:"operations"`
+		Operations []UpdateOperations `json:"operations"`
 	}
 
 	var requestBody body

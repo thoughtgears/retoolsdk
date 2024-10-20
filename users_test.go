@@ -306,7 +306,7 @@ func TestUpdateUser_Success(t *testing.T) {
 		},
 	}
 
-	operations := []retool.UpdateUserOperations{
+	operations := []retool.UpdateOperations{
 		{
 			Op:    "replace",
 			Path:  "first_name",
@@ -342,7 +342,7 @@ func TestUpdateUser_Failure(t *testing.T) {
 		},
 	}
 
-	operations := []retool.UpdateUserOperations{
+	operations := []retool.UpdateOperations{
 		{
 			Op:    "replace",
 			Path:  "first_name",
@@ -353,7 +353,7 @@ func TestUpdateUser_Failure(t *testing.T) {
 	updatedUser, err := client.UpdateUser("123", operations)
 	assert.Error(t, err)
 	assert.Nil(t, updatedUser)
-	assert.Equal(t, "Patched document failed schema validation: String must contain at least 1 character(s): first_name", err.Error())
+	assert.Equal(t, "validation failed for operation: value cannot be empty for replace operation", err.Error())
 }
 
 func TestDeleteUser_Success(t *testing.T) {

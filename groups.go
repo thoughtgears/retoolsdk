@@ -1,6 +1,8 @@
 package retoolsdk
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
 	"net/url"
 )
@@ -106,4 +108,32 @@ func (c *Client) CreateGroup(group *Group) (*Group, error) {
 
 	baseURL := fmt.Sprintf("%s/groups", c.BaseURL)
 	return doSingleRequest[Group](c, "POST", baseURL, group)
+}
+
+// UpdateGroup update a group in an organization using JSON Patch (RFC 6902). Returns the updated group. The API token must have the "Groups > Write" scope.
+func (c *Client) UpdateGroup(id string, operations []UpdateOperations) (*Group, error) {
+	if len(operations) == 0 {
+		return nil, errors.New("no operations provided")
+	}
+
+	for _, op := range operations {
+		if err := op.Validate(); err != nil {
+			return nil, fmt.Errorf("validation failed for operation: %w", err)
+		}
+	}
+
+	type body struct {
+		Operations []UpdateOperations `json:"operations"`
+	}
+
+	var requestBody body
+	requestBody.Operations = operations
+
+	requestBodyJSON, err := json.Marshal(requestBody)
+	if err != nil {
+		return nil, fmt.Errorf("marshalling request: %w", err)
+	}
+
+	baseURL := fmt.Sprintf("%s/groups/%s", c.BaseURL, id)
+	return doSingleRequest[Group](c, "PATCH", baseURL, requestBodyJSON)
 }
