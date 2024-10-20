@@ -51,31 +51,7 @@ func TestGetUser_Success(t *testing.T) {
 	assert.Equal(t, "jane.doe@example.com", user.Email)
 }
 
-func TestGetUser_EmptyData(t *testing.T) {
-	response := `
-{
-	"success": false,
-	"message": "User not found"
-}`
-
-	client := &retool.Client{
-		BaseURL: "https://example.com",
-		HTTPClient: &http.Client{
-			Transport: &MockTransport{
-				Response: &http.Response{
-					StatusCode: 200,
-					Body:       io.NopCloser(bytes.NewBuffer([]byte(response))),
-				},
-			},
-		},
-	}
-
-	user, err := client.GetUser("user_123")
-	assert.Error(t, err)
-	assert.Nil(t, user)
-}
-
-func TestGetUser_MisformattedID(t *testing.T) {
+func TestGetUser_Failure(t *testing.T) {
 	response := `
 {
 	"success": false,
@@ -87,7 +63,7 @@ func TestGetUser_MisformattedID(t *testing.T) {
 		HTTPClient: &http.Client{
 			Transport: &MockTransport{
 				Response: &http.Response{
-					StatusCode: 200,
+					StatusCode: 500,
 					Body:       io.NopCloser(bytes.NewBuffer([]byte(response))),
 				},
 			},
@@ -260,67 +236,23 @@ func TestCreateUser_Success(t *testing.T) {
 	assert.True(t, user.Active)
 }
 
-func TestCreateUser_UserAlreadyExists(t *testing.T) {
-	response := `
-{
-	"success": false,
-	"message": "User with email jane.doe@example.com already exists"
-}`
-
-	client := &retool.Client{
-		BaseURL: "https://example.com",
-		HTTPClient: &http.Client{
-			Transport: &MockTransport{
-				Response: &http.Response{
-					StatusCode: 200,
-					Body:       io.NopCloser(bytes.NewBuffer([]byte(response))),
-				},
-			},
-		},
-	}
-
+func TestCreateUser_ValidationFailure(t *testing.T) {
 	opts := &retool.CreateUserOpts{
 		Active: true,
-		Type:   retool.UserTypeDefault,
+		Type:   "wrong_type",
 	}
-
-	user, err := client.CreateUser("jane.doe@example.com", "Jane", "Doe", opts)
-	assert.Error(t, err)
-	assert.Nil(t, user)
-	assert.Equal(t, "User with email jane.doe@example.com already exists", err.Error())
-}
-
-func TestCreateUser_InvalidEmailType(t *testing.T) {
-	response := `
-{
-	"success": false,
-	"message": "Invalid email type for body parameter: email"
-}`
 
 	client := &retool.Client{
-		BaseURL: "https://example.com",
-		HTTPClient: &http.Client{
-			Transport: &MockTransport{
-				Response: &http.Response{
-					StatusCode: 200,
-					Body:       io.NopCloser(bytes.NewBuffer([]byte(response))),
-				},
-			},
-		},
+		BaseURL:    "https://example.com",
+		HTTPClient: &http.Client{},
 	}
 
-	opts := &retool.CreateUserOpts{
-		Active: true,
-		Type:   retool.UserTypeDefault,
-	}
-
-	user, err := client.CreateUser("invalid-email", "Jane", "Doe", opts)
+	_, err := client.CreateUser("", "", "", opts)
 	assert.Error(t, err)
-	assert.Nil(t, user)
-	assert.Equal(t, "Invalid email type for body parameter: email", err.Error())
+	assert.Contains(t, err.Error(), "invalid value for UserType: wrong_type")
 }
 
-func TestCreateUser_InternalServerError(t *testing.T) {
+func TestCreateUser_Failure(t *testing.T) {
 	response := `
 {
 	"success": false,

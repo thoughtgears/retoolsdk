@@ -72,6 +72,22 @@ const (
 	UserTypeMobile  = "mobile"
 )
 
+// Validate ensures that the options provided in CreateUserOpts have valid values.
+func (u *User) Validate() error {
+	validUserTypes := map[string]struct{}{
+		UserTypeDefault: {},
+		UserTypeEmbed:   {},
+		UserTypeMobile:  {},
+	}
+
+	// Validate UserType
+	if _, ok := validUserTypes[u.UserType]; !ok && u.UserType != "" {
+		return fmt.Errorf("invalid value for UserType: %s", u.UserType)
+	}
+
+	return nil
+}
+
 // CreateUser creates a user and returns the created user. The API token must have the "Users > Write" scope.
 func (c *Client) CreateUser(email, firstName, lastName string, opts *CreateUserOpts) (*User, error) {
 	newUser := &User{
@@ -83,25 +99,21 @@ func (c *Client) CreateUser(email, firstName, lastName string, opts *CreateUserO
 	if opts != nil {
 		if opts.Type == "" {
 			newUser.UserType = UserTypeDefault
-		} else if opts.Type != UserTypeDefault && opts.Type != UserTypeEmbed && opts.Type != UserTypeMobile {
-			return nil, errors.New("invalid newUser type: must be 'default', 'embed', or 'mobile'")
 		} else {
 			newUser.UserType = opts.Type
 		}
-
 		newUser.Active = opts.Active
 	} else {
 		newUser.UserType = UserTypeDefault
 		newUser.Active = false
 	}
 
-	newUserJSON, err := json.Marshal(newUser)
-	if err != nil {
-		return nil, fmt.Errorf("marshalling newUser: %w", err)
+	if err := newUser.Validate(); err != nil {
+		return nil, err
 	}
 
 	baseURL := fmt.Sprintf("%s/users", c.BaseURL)
-	return doSingleRequest[User](c, "POST", baseURL, newUserJSON)
+	return doSingleRequest[User](c, "POST", baseURL, newUser)
 }
 
 // UpdateUserOperations is a struct that contains the operations to update a user.
