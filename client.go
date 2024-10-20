@@ -1,4 +1,4 @@
-package retool_sdk
+package retoolsdk
 
 import (
 	"encoding/json"
@@ -12,7 +12,7 @@ import (
 // Client is the main struct for the SDK
 // APIKey is the API key for the Retool instance (required)
 // Endpoint is the URL of the Retool instance (required)
-// Protocol is the protocol to use for the API requests (default: https)
+// Protocol is the protocol to use for the API requests (default: https).
 type Client struct {
 	APIKey     string
 	Endpoint   string
@@ -55,19 +55,19 @@ type Response[T any] struct {
 }
 
 // transportWithAPIKey is custom transport that adds the API key to
-// the Authorization header for every request
+// the Authorization header for every request.
 type transportWithAPIKey struct {
 	APIKey    string
 	Transport http.RoundTripper
 }
 
-// ClientOption defines the type for functional options
+// ClientOption defines the type for functional options.
 type ClientOption func(*Client) error
 
 // NewClient creates a new Retool client
 // apiKey is the API key for the Retool instance (required)
 // Endpoint is the URL of the Retool instance (required) (default: https)
-// opts are the optional client options
+// opts are the optional client options.
 func NewClient(apiKey, endpoint string, opts ...ClientOption) (*Client, error) {
 	if apiKey == "" || endpoint == "" {
 		return nil, errors.New("API key and Endpoint are required")
@@ -87,7 +87,7 @@ func NewClient(apiKey, endpoint string, opts ...ClientOption) (*Client, error) {
 		Endpoint: endpoint,
 		BaseURL:  endpoint + "/api/v2",
 		HTTPClient: &http.Client{
-			Timeout:   10 * time.Duration(time.Second),
+			Timeout:   10 * time.Second,
 			Transport: customTransport,
 		},
 	}
@@ -102,7 +102,7 @@ func NewClient(apiKey, endpoint string, opts ...ClientOption) (*Client, error) {
 }
 
 // RoundTrip adds the API key to the Authorization header for every request
-// and sets the Content-Type header to application/json
+// and sets the Content-Type header to application/json.
 func (t *transportWithAPIKey) RoundTrip(req *http.Request) (*http.Response, error) {
 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", t.APIKey))
 
@@ -113,11 +113,11 @@ func (t *transportWithAPIKey) RoundTrip(req *http.Request) (*http.Response, erro
 	return t.Transport.RoundTrip(req)
 }
 
-// WithTimeout allows setting a custom timeout in seconds for the HTTP client
+// WithTimeout allows setting a custom timeout in seconds for the HTTP client.
 func WithTimeout(timeout time.Duration) ClientOption {
 	return func(c *Client) error {
 		if timeout > 0 {
-			c.HTTPClient.Timeout = timeout * time.Second
+			c.HTTPClient.Timeout = timeout
 		} else {
 			return errors.New("timeout must be greater than 0")
 		}

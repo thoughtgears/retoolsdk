@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	retool "github.com/thoughtgears/retool-sdk"
+	retool "github.com/thoughtgears/retoolsdk"
 )
 
 func main() {

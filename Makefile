@@ -4,10 +4,10 @@ ifneq (,$(wildcard ./.env))
     export
 endif
 
-.PHONY: test example
+.PHONY: lint test
 
-example:
-	@go run example/main.go
+lint:
+	@golangci-lint run
 
 test:
 	@go test -v ./...

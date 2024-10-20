@@ -1,4 +1,4 @@
-module github.com/thoughtgears/retool-sdk
+module github.com/thoughtgears/retoolsdk
 
 go 1.23
 

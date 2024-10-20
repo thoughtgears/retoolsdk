@@ -1,4 +1,4 @@
-package retool_sdk_test
+package retoolsdk_test
 
 import (
 	"io"
@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	retool "github.com/thoughtgears/retool-sdk"
+	retool "github.com/thoughtgears/retoolsdk"
 
 	"github.com/stretchr/testify/assert"
 )

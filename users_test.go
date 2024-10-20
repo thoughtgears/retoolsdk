@@ -1,4 +1,4 @@
-package retool_sdk_test
+package retoolsdk_test
 
 import (
 	"bytes"
@@ -8,7 +8,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	retool "github.com/thoughtgears/retool-sdk"
+	retool "github.com/thoughtgears/retoolsdk"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -216,4 +216,136 @@ func TestListUsers_EmptyResponse(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Nil(t, users)
 	assert.Len(t, users, 0)
+}
+
+func TestCreateUser_Success(t *testing.T) {
+	response := `
+{
+	"success": true,
+	"data": {
+		"id": "user_123",
+		"email": "jane.doe@example.com",
+		"first_name": "Jane",
+		"last_name": "Doe",
+		"user_type": "default",
+		"active": true
+	}
+}`
+
+	client := &retool.Client{
+		BaseURL: "https://example.com",
+		HTTPClient: &http.Client{
+			Transport: &MockTransport{
+				Response: &http.Response{
+					StatusCode: 200,
+					Body:       io.NopCloser(bytes.NewBuffer([]byte(response))),
+				},
+			},
+		},
+	}
+
+	opts := &retool.CreateUserOpts{
+		Active: true,
+		Type:   retool.UserTypeDefault,
+	}
+
+	user, err := client.CreateUser("jane.doe@example.com", "Jane", "Doe", opts)
+	assert.NoError(t, err)
+	assert.NotNil(t, user)
+	assert.Equal(t, "user_123", user.ID)
+	assert.Equal(t, "jane.doe@example.com", user.Email)
+	assert.Equal(t, "Jane", user.FirstName)
+	assert.Equal(t, "Doe", user.LastName)
+	assert.Equal(t, "default", user.UserType)
+	assert.True(t, user.Active)
+}
+
+func TestCreateUser_UserAlreadyExists(t *testing.T) {
+	response := `
+{
+	"success": false,
+	"message": "User with email jane.doe@example.com already exists"
+}`
+
+	client := &retool.Client{
+		BaseURL: "https://example.com",
+		HTTPClient: &http.Client{
+			Transport: &MockTransport{
+				Response: &http.Response{
+					StatusCode: 200,
+					Body:       io.NopCloser(bytes.NewBuffer([]byte(response))),
+				},
+			},
+		},
+	}
+
+	opts := &retool.CreateUserOpts{
+		Active: true,
+		Type:   retool.UserTypeDefault,
+	}
+
+	user, err := client.CreateUser("jane.doe@example.com", "Jane", "Doe", opts)
+	assert.Error(t, err)
+	assert.Nil(t, user)
+	assert.Equal(t, "User with email jane.doe@example.com already exists", err.Error())
+}
+
+func TestCreateUser_InvalidEmailType(t *testing.T) {
+	response := `
+{
+	"success": false,
+	"message": "Invalid email type for body parameter: email"
+}`
+
+	client := &retool.Client{
+		BaseURL: "https://example.com",
+		HTTPClient: &http.Client{
+			Transport: &MockTransport{
+				Response: &http.Response{
+					StatusCode: 200,
+					Body:       io.NopCloser(bytes.NewBuffer([]byte(response))),
+				},
+			},
+		},
+	}
+
+	opts := &retool.CreateUserOpts{
+		Active: true,
+		Type:   retool.UserTypeDefault,
+	}
+
+	user, err := client.CreateUser("invalid-email", "Jane", "Doe", opts)
+	assert.Error(t, err)
+	assert.Nil(t, user)
+	assert.Equal(t, "Invalid email type for body parameter: email", err.Error())
+}
+
+func TestCreateUser_InternalServerError(t *testing.T) {
+	response := `
+{
+	"success": false,
+	"message": "Internal server error"
+}`
+
+	client := &retool.Client{
+		BaseURL: "https://example.com",
+		HTTPClient: &http.Client{
+			Transport: &MockTransport{
+				Response: &http.Response{
+					StatusCode: 500,
+					Body:       io.NopCloser(bytes.NewBuffer([]byte(response))),
+				},
+			},
+		},
+	}
+
+	opts := &retool.CreateUserOpts{
+		Active: true,
+		Type:   retool.UserTypeDefault,
+	}
+
+	user, err := client.CreateUser("jane.doe@example.com", "Jane", "Doe", opts)
+	assert.Error(t, err)
+	assert.Nil(t, user)
+	assert.Equal(t, "Internal server error", err.Error())
 }
