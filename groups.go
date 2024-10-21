@@ -60,16 +60,8 @@ func (c *Client) GetGroup(id string) (*Group, error) {
 // ListGroups get all permission groups for an organization or space. The API token must have the "Groups > Read" scope.
 func (c *Client) ListGroups() ([]Group, error) {
 	baseURL := fmt.Sprintf("%s/groups", c.BaseURL)
-	return doPaginatedRequest[Group](c, baseURL, url.Values{})
+	return doPaginatedRequest[Group](c, "GET", baseURL, nil, url.Values{})
 }
-
-// Constants for the allowed access levels.
-const (
-	NoneAccess = "none"
-	UseAccess  = "use"
-	EditAccess = "edit"
-	OwnAccess  = "own"
-)
 
 // Validate ensures that the options provided in CreateGroupOpts have valid values.
 func (g *Group) Validate() error {
@@ -110,7 +102,8 @@ func (c *Client) CreateGroup(group *Group) (*Group, error) {
 	return doSingleRequest[Group](c, "POST", baseURL, group)
 }
 
-// UpdateGroup update a group in an organization using JSON Patch (RFC 6902). Returns the updated group. The API token must have the "Groups > Write" scope.
+// UpdateGroup update a group in an organization using JSON Patch (RFC 6902). Returns the updated group. The API token
+// must have the "Groups > Write" scope.
 func (c *Client) UpdateGroup(id string, operations []UpdateOperations) (*Group, error) {
 	if len(operations) == 0 {
 		return nil, errors.New("no operations provided")
@@ -122,12 +115,11 @@ func (c *Client) UpdateGroup(id string, operations []UpdateOperations) (*Group, 
 		}
 	}
 
-	type body struct {
+	requestBody := struct {
 		Operations []UpdateOperations `json:"operations"`
+	}{
+		Operations: operations,
 	}
-
-	var requestBody body
-	requestBody.Operations = operations
 
 	requestBodyJSON, err := json.Marshal(requestBody)
 	if err != nil {
@@ -143,4 +135,28 @@ func (c *Client) DeleteGroup(id string) error {
 	baseURL := fmt.Sprintf("%s/groups/%s", c.BaseURL, id)
 	_, err := doSingleRequest[any](c, "DELETE", baseURL, nil)
 	return err
+}
+
+// AddUsersToGroup adds a user to specified group and returns the group. Can optionally set or unset group admins
+// by using the is_group_admin property. The API token must have the "Groups > Write" scope.
+func (c *Client) AddUsersToGroup(groupID string, members []Member) (*Group, error) {
+	requestBody := struct {
+		Members []Member `json:"members"`
+	}{
+		Members: members,
+	}
+
+	requestBodyJSON, err := json.Marshal(requestBody)
+	if err != nil {
+		return nil, fmt.Errorf("marshalling request: %w", err)
+	}
+
+	baseURL := fmt.Sprintf("%s/groups/%s/members", c.BaseURL, groupID)
+	return doSingleRequest[Group](c, "POST", baseURL, requestBodyJSON)
+}
+
+// RemoveUserFromGroup removes the user from the group and returns the group. The API token must have the "Groups > Write" scope.
+func (c *Client) RemoveUserFromGroup(groupID, userID string) (*Group, error) {
+	baseURL := fmt.Sprintf("%s/groups/%s/members/%s", c.BaseURL, groupID, userID)
+	return doSingleRequest[Group](c, "DELETE", baseURL, nil)
 }

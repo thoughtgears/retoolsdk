@@ -91,9 +91,10 @@ func (c *Client) DeleteUserAttribute(id, attribute string) (interface{}, error) 
 	return nil, nil
 }
 
-// GetOrganizationAttributes gets the list of currently configured user attributes for the organization. The API token must have the "Users > Read" scope.
+// GetOrganizationAttributes gets the list of currently configured user attributes for the organization.
+// The API token must have the "Users > Read" scope.
 func (c *Client) GetOrganizationAttributes() ([]OrganizationAttribute, error) {
 	baseURL := fmt.Sprintf("%s/user_attributes", c.BaseURL)
 
-	return doPaginatedRequest[OrganizationAttribute](c, baseURL, url.Values{})
+	return doPaginatedRequest[OrganizationAttribute](c, "GET", baseURL, nil, url.Values{})
 }

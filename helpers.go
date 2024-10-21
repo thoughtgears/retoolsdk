@@ -44,7 +44,7 @@ func doSingleRequest[T any](client *Client, method, url string, body interface{}
 }
 
 // doPaginatedRequest is a helper function to make paginated requests to the API.
-func doPaginatedRequest[T any](client *Client, baseURL string, query url.Values) ([]T, error) {
+func doPaginatedRequest[T any](client *Client, method, baseURL string, body []byte, query url.Values) ([]T, error) {
 	var allItems []T
 	var nextToken string
 	hasMore := true
@@ -55,7 +55,7 @@ func doPaginatedRequest[T any](client *Client, baseURL string, query url.Values)
 		}
 
 		urlWithQuery := fmt.Sprintf("%s?%s", baseURL, query.Encode())
-		resp, err := client.Do("GET", urlWithQuery, nil)
+		resp, err := client.Do(method, urlWithQuery, body)
 		if err != nil {
 			return nil, fmt.Errorf("making request: %w", err)
 		}

@@ -56,7 +56,7 @@ func (c *Client) ListUsers(opts *ListUserOpts) ([]User, error) {
 		}
 	}
 
-	return doPaginatedRequest[User](c, baseURL, query)
+	return doPaginatedRequest[User](c, "GET", baseURL, nil, query)
 }
 
 // CreateUserOpts is a struct that contains optional parameters for CreateUser.
@@ -128,12 +128,11 @@ func (c *Client) UpdateUser(id string, operations []UpdateOperations) (*User, er
 		}
 	}
 
-	type body struct {
+	requestBody := struct {
 		Operations []UpdateOperations `json:"operations"`
+	}{
+		Operations: operations,
 	}
-
-	var requestBody body
-	requestBody.Operations = operations
 
 	requestBodyJSON, err := json.Marshal(requestBody)
 	if err != nil {
