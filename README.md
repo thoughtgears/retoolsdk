@@ -2,52 +2,6 @@
 
 Standardized API client for the Retool API.
 
-## Implemented features
-
-#### User
-
-- **Get User by ID**: Get a user information by ID.
-- **List Users**: List all users in the organization.
-- **Create User**: Create a new user with optional parameters.
-- **Update User**: Update a user's information by ID.
-- **Delete User**: Delete a user by ID.
-
-#### User Attributes
-
-- **Update User Attributes**: Update a user's attributes by ID.
-- **Delete User Attributes**: Delete a user's attributes by ID.
-- **List Organization Attributes**: List all organization attributes.
-
-#### Group
-
-- **Get Group by ID**: Get a group information by ID.
-- **List Groups**: List all groups in the organization.
-- **Create Group**: Create a new group with optional parameters.
-- **Update Group**: Update a group's information by ID.
-- **Delete Group**: Delete a group by ID.
-
-#### Permissions
-- 
-- **List Permissions**: List all permissions in the organization.
-- **Grant Permission**: Grant a permission to a user or group.
-- **Revoke Permission**: Revoke a permission from a user or group.
-
-#### Folders
-
-- **Get Folder by ID**: Get a folder information by ID.
-- **List Folders**: List all folders in the organization.
-- **Create Folder**: Create a new folder with optional parameters.
-- **Update Folder**: Update a folder's information by ID.
-- **Delete Folder**: Delete a folder by ID.
-
-#### Spaces
-
-- **Get Space by ID**: Get a space information by ID.
-- **List Spaces**: List all spaces in the organization.
-- **Create Space**: Create a new space with optional parameters.
-- **Update Space**: Update a space's information by ID.
-- **Delete Space**: Delete a space by ID.
-
 ## Usage
 
 ### Installation
@@ -112,9 +66,17 @@ To request the next page of results, include the token in the URL parameters of 
 curl -H "Authorization: Bearer {token}" https://api.retool.com/api/v2/resources?next=opaque-pagination-token
 ```
 
-## Development
-
 ## Contributing
 
+We welcome contributions! Please follow these steps to contribute:
+1. Fork the repository.
+2. Create a new branch for your feature or bugfix.
+3. Make your changes and commit them with clear and concise messages.
+4. Push your changes to your fork.
+5. Open a pull request to the main repository.
+
 ## Issues
+
+If you encounter any issues, please report them using the GitHub issue tracker. Provide as much detail as possible, 
+including steps to reproduce the issue and any relevant logs or screenshots.
 
