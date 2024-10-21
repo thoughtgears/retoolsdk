@@ -26,6 +26,11 @@ Standardized API client for the Retool API.
 - **Update Group**: Update a group's information by ID.
 - **Delete Group**: Delete a group by ID.
 
+#### Permissions
+- **List Permissions**: List all permissions in the organization.
+- **Grant Permission**: Grant a permission to a user or group.
+- **Revoke Permission**: Revoke a permission from a user or group.
+
 ## Usage
 
 ### Installation

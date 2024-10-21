@@ -72,7 +72,7 @@ const (
 	UserTypeMobile  = "mobile"
 )
 
-// Validate ensures that the options provided in CreateUserOpts have valid values.
+// Validate ensures that the options provided in User have valid values.
 func (u *User) Validate() error {
 	validUserTypes := map[string]struct{}{
 		UserTypeDefault: {},

@@ -68,10 +68,10 @@ func (a *AccessLevel) String() string {
 
 // Object types allowed.
 const (
-	App                   = "app"
-	Folder                = "folder"
-	Resource              = "resource"
-	ResourceConfiguration = "resourceConfiguration"
+	AppObject                   = "app"
+	FolderObject                = "folder"
+	ResourceObject              = "resource"
+	ResourceConfigurationObject = "resourceConfiguration"
 )
 
 type ObjectType string
@@ -83,10 +83,10 @@ func (o *ObjectType) String() string {
 // Validate ensures that the provided object types has a valid value.
 func (o *ObjectType) Validate() error {
 	validTypes := map[string]struct{}{
-		App:                   {},
-		Folder:                {},
-		Resource:              {},
-		ResourceConfiguration: {},
+		AppObject:                   {},
+		FolderObject:                {},
+		ResourceObject:              {},
+		ResourceConfigurationObject: {},
 	}
 
 	if _, ok := validTypes[string(*o)]; !ok {
