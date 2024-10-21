@@ -7,14 +7,14 @@ import (
 	"slices"
 )
 
-// Subject represents the subject in the response (group, user, userInvite)
+// Subject represents the subject in the response (group, user, userInvite).
 type Subject struct {
 	ID          string `json:"id"`
 	Type        string `json:"type"`
 	AccessLevel string `json:"access_level,omitempty"`
 }
 
-// Sources represents the sources of access (direct, universal, groups, inherited)
+// Sources represents the sources of access (direct, universal, groups, inherited).
 type Sources struct {
 	Direct    bool      `json:"direct"`
 	Universal bool      `json:"universal"`
@@ -22,14 +22,14 @@ type Sources struct {
 	Inherited Subject   `json:"inherited"`
 }
 
-// AccessData represents the access information for group, user, or userInvite
+// AccessData represents the access information for group, user, or userInvite.
 type AccessData struct {
 	Subject     Subject `json:"subject"`
 	Sources     Sources `json:"sources"`
 	AccessLevel string  `json:"accessLevel"`
 }
 
-// GroupedData holds the different categories of access data returned in the "data" field
+// GroupedData holds the different categories of access data returned in the "data" field.
 type GroupedData struct {
 	Group      []AccessData `json:"group"`
 	User       []AccessData `json:"user"`
@@ -98,7 +98,7 @@ func (o *ObjectType) Validate() error {
 
 // GetFolderOrAppAccessList Returns the list of users/groups and corresponding access levels whom have access to a
 // selected folder/page. The API token must have the "Permissions > Read" scope.
-// Supported from onprem edge version 3.96.0+ and 3.114-stable+
+// Supported from onprem edge version 3.96.0+ and 3.114-stable+.
 func (c *Client) GetFolderOrAppAccessList(objectID, objectType ObjectType) (*GroupedData, error) {
 	if err := objectType.Validate(); err != nil {
 		return nil, fmt.Errorf("validating object type: %w", err)
@@ -112,7 +112,7 @@ func (c *Client) GetFolderOrAppAccessList(objectID, objectType ObjectType) (*Gro
 // access to. The API token must have the "Permissions > Read" scope.
 // Folders are supported from API version 2.0.0 + and onprem version 3.18+,
 // apps are supported from API version 2.4.0+ and onprem version 3.26.0+,
-// resources and resource_configurations are supported from onprem edge version 3.37.0+ and 3.47-stable+
+// resources and resource_configurations are supported from onprem edge version 3.37.0+ and 3.47-stable+.
 func (c *Client) ListGroupObjectPermissions(subject string, objectType ObjectType, id any) ([]Subject, error) {
 	if err := objectType.Validate(); err != nil {
 		return nil, fmt.Errorf("validating object type: %w", err)

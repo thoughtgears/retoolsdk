@@ -81,7 +81,7 @@ func NewClient(apiKey, endpoint string, opts ...ClientOption) (*Client, error) {
 	return c, nil
 }
 
-// Do makes an HTTP request to the Retool API
+// Do makes an HTTP request to the Retool API.
 func (c *Client) Do(method, url string, body interface{}) (*http.Response, error) {
 	var requestBody []byte
 	var err error

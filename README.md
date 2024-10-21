@@ -27,9 +27,26 @@ Standardized API client for the Retool API.
 - **Delete Group**: Delete a group by ID.
 
 #### Permissions
+- 
 - **List Permissions**: List all permissions in the organization.
 - **Grant Permission**: Grant a permission to a user or group.
 - **Revoke Permission**: Revoke a permission from a user or group.
+
+#### Folders
+
+- **Get Folder by ID**: Get a folder information by ID.
+- **List Folders**: List all folders in the organization.
+- **Create Folder**: Create a new folder with optional parameters.
+- **Update Folder**: Update a folder's information by ID.
+- **Delete Folder**: Delete a folder by ID.
+
+#### Spaces
+
+- **Get Space by ID**: Get a space information by ID.
+- **List Spaces**: List all spaces in the organization.
+- **Create Space**: Create a new space with optional parameters.
+- **Update Space**: Update a space's information by ID.
+- **Delete Space**: Delete a space by ID.
 
 ## Usage
 

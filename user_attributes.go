@@ -84,7 +84,7 @@ func (c *Client) DeleteUserAttribute(id, attribute string) (interface{}, error) 
 		return nil, errors.New(response.Message)
 	}
 
-	if &response.Data != nil {
+	if response.Data != (User{}) {
 		return response.Data.Metadata, nil
 	}
 

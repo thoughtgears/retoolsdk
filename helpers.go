@@ -8,7 +8,7 @@ import (
 	"net/url"
 )
 
-// decodeResponse is a helper function to decode JSON responses
+// decodeResponse is a helper function to decode JSON responses.
 func decodeResponse[T any](resp *http.Response) (*Response[T], error) {
 	var response Response[T]
 
